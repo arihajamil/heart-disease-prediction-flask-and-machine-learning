@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}Model Performance &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">🎯 Model Performance</h1>
+<p class="page-subtitle">
+  Evaluation metrics for all five classifiers
+  {% if test_size %}on {{ '{:,}'.format(test_size) }} held-out patients{% endif %}.
+</p>
+<hr class="divider">
+
+{% if not rows %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9888;</div>
+    <div class="empty-title">No results available</div>
+    <div class="empty-text">
+      The models have not been evaluated yet.<br>
+      Run the pipeline from <a href="{{ url_for('admin.training') }}">Model Training</a>.
+    </div>
+  </div>
+{% else %}
+
+  <!-- ── Best model banner ─────────────────────────────────── -->
+  {% set top = rows[0] %}
+  <div class="panel" style="border-color:#a855f7;border-left:5px solid #a855f7;">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div style="font-size:2.2em;">&#127942;</div>
+      <div>
+        <div class="text-sm text-muted">Best Performing Model (by ROC AUC)</div>
+        <div style="font-size:1.4em;font-weight:800;color:#7c3aed;">{{ top.name }}</div>
+        <div class="text-sm">
+          AUC <strong>{{ '%.4f'|format(top.auc) }}</strong> &nbsp;|&nbsp;
+          Accuracy <strong>{{ '%.2f'|format(top.accuracy * 100) }}%</strong> &nbsp;|&nbsp;
+          F1 <strong>{{ '%.4f'|format(top.f1) }}</strong>
+        </div>
+      </div>
+    </div>
+    {% if rows|length > 1 and (top.auc - rows[1].auc) < 0.005 %}
+      <div class="alert alert-info text-sm mt-2">
+        <strong>{{ top.name }}</strong> and <strong>{{ rows[1].name }}</strong> differ by only
+        {{ '%.4f'|format(top.auc - rows[1].auc) }} AUC &mdash; smaller than the
+        cross-validation spread, so they are effectively tied.
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Comparison table ──────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-title">Metric Comparison</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th class="num">Accuracy</th><th class="num">Precision</th>
+            <th class="num" title="Recall at the standard 0.50 cut-off, for comparison with published results">Recall @0.50</th><th class="num">F1</th><th class="num">ROC AUC</th>
+            {% if has_screening %}
+              <th class="num" title="Recall at the app's screening threshold of {{ '%.2f'|format(screen_threshold) }}">
+                Recall @{{ '%.2f'|format(screen_threshold) }}</th>
+            {% endif %}
+            <th class="num" title="Mean squared error between predicted probability and outcome. Lower is better; 0.25 = always guessing 50%.">
+              Brier</th>
+            <th class="num">Sensitivity</th><th class="num">Specificity</th>
+            <th class="num">Train (s)</th><th class="num">Predict (ms/1k)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr {% if r.is_best %}style="background:#faf5ff;"{% endif %}>
+              <td>
+                <strong>{{ r.name }}</strong>
+                {% if r.is_best %}<span class="badge badge-violet">Best</span>{% endif %}
+                {% if r.is_ensemble %}<span class="badge badge-violet" title="Mean of the five probabilities - the verdict the app shows">App verdict</span>{% endif %}
+              </td>
+              <td class="num">{{ '%.2f'|format(r.accuracy * 100) }}%</td>
+              <td class="num">{{ '%.4f'|format(r.precision) }}</td>
+              <td class="num">{{ '%.4f'|format(r.recall) }}</td>
+              <td class="num">{{ '%.4f'|format(r.f1) }}</td>
+              <td class="num"><strong>{{ '%.4f'|format(r.auc) }}</strong></td>
+              {% if has_screening %}
+                <td class="num">
+                  {% if r.screen_recall is not none %}<strong>{{ '%.4f'|format(r.screen_recall) }}</strong>{% else %}&mdash;{% endif %}
+                </td>
+              {% endif %}
+              <td class="num">
+                {% if r.brier is not none %}{{ '%.4f'|format(r.brier) }}{% else %}&mdash;{% endif %}
+              </td>
+              <td class="num">{{ '%.1f'|format(r.sensitivity * 100) }}%</td>
+              <td class="num">{{ '%.1f'|format(r.specificity * 100) }}%</td>
+              <td class="num">{{ '%.2f'|format(r.train_time) }}</td>
+              <td class="num">{{ '%.1f'|format(r.pred_time) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Metrics Side by Side</div>
+    <div class="chart-box tall"><canvas id="metricChart"></canvas></div>
+    <script type="application/json" id="metricData">{{ chart|tojson }}</script>
+  </div>
+
+  {% if has_screening %}
+  <!-- ── Screening threshold note ──────────────────────────── -->
+  <div class="alert alert-info text-sm">
+    <strong>Two cut-offs, on purpose.</strong>
+    The Accuracy / Precision / Recall columns use the textbook 0.50 cut-off so the
+    numbers stay comparable with published results. The application itself decides
+    &ldquo;at risk&rdquo; at <strong>{{ '%.2f'|format(screen_threshold) }}</strong>
+    (<code>Config.POSITIVE_THRESHOLD</code>) &mdash; a deliberately lower screening
+    threshold, because missing a real case costs more than an unnecessary check-up.
+    The <strong>Recall @{{ '%.2f'|format(screen_threshold) }}</strong> column shows how many true
+    cases that catches.
+  </div>
+  {% endif %}
+
+  {% if calibration %}
+  <!-- ── Calibration (reliability) curves ──────────────────── -->
+  <div class="panel">
+    <div class="panel-title">Calibration &mdash; is a predicted 72% really a 72%?</div>
+    <div class="alert alert-info text-sm">
+      Patients are binned by predicted probability; each point compares the bin&rsquo;s
+      average prediction (x) with the fraction who actually have the disease (y).
+      A trustworthy model hugs the dotted diagonal. The Brier score in the table
+      above summarises the same idea as one number &mdash; lower is better.
+    </div>
+    <div class="chart-box tall"><canvas id="calibrationChart"></canvas></div>
+    <script type="application/json" id="calibrationData">{{ calibration|tojson }}</script>
+  </div>
+  {% endif %}
+
+  <!-- ── Cross-validation ──────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-title">5-Fold Cross-Validation</div>
+    <div class="alert alert-info text-sm">
+      The scaler is refitted inside every fold and the held-out test set is excluded,
+      so these figures carry no information leakage. A small standard deviation means
+      the model does not depend on which particular split it was given.
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Model</th><th class="num">CV Accuracy</th>
+              <th class="num">CV ROC AUC</th><th class="num">Std Dev</th><th>Stability</th></tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td>{{ r.name }}</td>
+              <td class="num">
+                {% if r.cv_accuracy %}{{ '%.2f'|format(r.cv_accuracy * 100) }}%{% else %}—{% endif %}
+              </td>
+              <td class="num">
+                {% if r.cv_auc %}<strong>{{ '%.4f'|format(r.cv_auc) }}</strong>{% else %}—{% endif %}
+              </td>
+              <td class="num">
+                {% if r.cv_std %}&plusmn;{{ '%.4f'|format(r.cv_std) }}{% else %}—{% endif %}
+              </td>
+              <td>
+                {% if r.cv_std is not none %}
+                  {% if r.cv_std < 0.005 %}
+                    <span class="badge badge-green">Very stable</span>
+                  {% elif r.cv_std < 0.015 %}
+                    <span class="badge badge-amber">Stable</span>
+                  {% else %}
+                    <span class="badge badge-red">Variable</span>
+                  {% endif %}
+                {% else %}—{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Confusion matrices ────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-title">Confusion Matrices</div>
+    <div class="alert alert-info text-sm">
+      TP = correctly flagged as at risk &nbsp;|&nbsp; TN = correctly cleared &nbsp;|&nbsp;
+      FP = false alarm &nbsp;|&nbsp; FN = missed case. In screening, a false negative
+      usually costs more than a false alarm.
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Model</th><th class="num">TP</th><th class="num">TN</th>
+              <th class="num">FP</th><th class="num">FN</th>
+              <th class="num">Missed Cases</th></tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td>{{ r.name }}</td>
+              <td class="num" style="color:#16a34a;font-weight:700;">{{ r.tp }}</td>
+              <td class="num" style="color:#16a34a;font-weight:700;">{{ r.tn }}</td>
+              <td class="num" style="color:#f59e0b;">{{ r.fp }}</td>
+              <td class="num" style="color:#ef4444;font-weight:700;">{{ r.fn }}</td>
+              <td class="num">{{ '%.1f'|format(r.fn / (r.fn + r.tp) * 100 if (r.fn + r.tp) else 0) }}%</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Explainability ────────────────────────────────────── -->
+  <div class="grid grid-2">
+    {% if importances %}
+      <div class="panel">
+        <div class="panel-title">
+          Feature Importance
+          {% if importance_model %}<span class="badge badge-grey">{{ importance_model }}</span>{% endif %}
+        </div>
+        <div class="alert alert-info text-sm">
+          Read straight from the trained model, so this page stays fast.
+        </div>
+        <div class="chart-box tall"><canvas id="importanceChart"></canvas></div>
+        <script type="application/json" id="importanceData">
+          {{ importances | map(attribute='feature') | list | tojson }}
+        </script>
+        <script type="application/json" id="importanceValues">
+          {{ importances | tojson }}
+        </script>
+      </div>
+    {% endif %}
+
+    <div class="panel">
+      <div class="panel-title">SHAP Explainability</div>
+      {% if shap_image %}
+        <p class="text-sm text-muted">
+          Generated once during training, not on every page load, so this page
+          stays responsive.
+        </p>
+        <img src="{{ url_for('static', filename='img/' ~ shap_image) }}"
+             alt="SHAP summary plot" style="width:100%;border-radius:11px;">
+      {% else %}
+        <div class="alert alert-info">
+          <strong>No SHAP summary image found.</strong><br>
+          The image is written to <code>static/img/shap_summary.png</code> during
+          training when the <code>shap</code> library is installed. Until then, the
+          feature-importance chart alongside gives an equivalent global ranking.
+        </div>
+        <p class="text-sm text-muted">
+          SHAP is deliberately not computed per request &mdash; on this dataset it takes
+          tens of seconds, which would make the page unusable.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if rows %}
+  <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  <script>
+    HDPCharts.modelComparison('metricChart', 'metricData');
+    HDPCharts.calibrationCurves('calibrationChart', 'calibrationData');
+    (function () {
+      var valuesEl = document.getElementById('importanceValues');
+      if (!valuesEl) { return; }
+      var raw = JSON.parse(valuesEl.textContent);
+      var data = raw.map(function (d) {
+        return { label: d.feature, value: Math.round(d.importance * 1000) / 10 };
+      });
+      var holder = document.createElement('script');
+      holder.type = 'application/json';
+      holder.id = 'importanceChartData';
+      holder.textContent = JSON.stringify(data);
+      document.body.appendChild(holder);
+      HDPCharts.barChart('importanceChart', 'importanceChartData', 'Importance (%)', true);
+    })();
+  </script>
+{% endif %}
+{% endblock %}

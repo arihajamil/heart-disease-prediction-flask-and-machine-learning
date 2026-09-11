@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}All Predictions &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">🗂 Prediction Management</h1>
+<p class="page-subtitle">Every assessment recorded in the system.</p>
+<hr class="divider">
+
+<div class="kpi-wrap">
+  <div class="kpi-card k-blue"><div class="kpi-val">{{ total }}</div><div class="kpi-lbl">Total Records</div></div>
+  <div class="kpi-card"><div class="kpi-val">{{ high }}</div><div class="kpi-lbl">High Risk</div></div>
+  <div class="kpi-card k-green"><div class="kpi-val">{{ low }}</div><div class="kpi-lbl">Low Risk</div></div>
+  <div class="kpi-card k-violet"><div class="kpi-val">{{ rows|length }}</div><div class="kpi-lbl">Shown After Filters</div></div>
+</div>
+
+<form method="get" class="filter-bar">
+  <div class="field">
+    <label for="q">Search</label>
+    <input type="text" id="q" name="q" value="{{ search }}" placeholder="Patient or clinician">
+  </div>
+  <div class="field">
+    <label for="verdict">Verdict</label>
+    <select id="verdict" name="verdict">
+      <option value="all"  {% if verdict == 'all'  %}selected{% endif %}>All</option>
+      <option value="high" {% if verdict == 'high' %}selected{% endif %}>High Risk</option>
+      <option value="low"  {% if verdict == 'low'  %}selected{% endif %}>Low Risk</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="model">Model</label>
+    <select id="model" name="model">
+      <option value="all" {% if model_filter == 'all' %}selected{% endif %}>All models</option>
+      {% for m in models_seen %}
+        <option value="{{ m }}" {% if model_filter == m %}selected{% endif %}>{{ m }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field"><button type="submit" class="btn btn-sm">Apply</button></div>
+  <div class="field"><a href="{{ url_for('admin.predictions') }}" class="btn btn-sm btn-grey">Reset</a></div>
+</form>
+
+{% if rows %}
+  <div class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num">ID</th><th>Date</th><th>Patient</th><th>Recorded By</th>
+            <th class="num">Age</th><th class="num">BP</th>
+            <th class="num">Risk</th><th>Band</th><th>Model</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td class="num">{{ r.id }}</td>
+              <td class="text-sm">{{ r.timestamp[:16] }}</td>
+              <td>{{ r.patient_name or '—' }}
+                {% if r.patient_id %}<div class="text-sm text-muted">{{ r.patient_id }}</div>{% endif %}
+              </td>
+              <td class="text-sm">{{ r.doctor_name or r.doctor_username or '—' }}</td>
+              <td class="num">{{ r.age|int }}</td>
+              <td class="num text-sm">{{ r.ap_hi|int }}/{{ r.ap_lo|int }}</td>
+              <td class="num"><strong>{{ '%.1f'|format(r.probability * 100) }}%</strong></td>
+              <td>
+                {% if r.risk.label == 'HIGH RISK' %}
+                  <span class="badge badge-red">High</span>
+                {% elif r.risk.label == 'MODERATE RISK' %}
+                  <span class="badge badge-amber">Moderate</span>
+                {% else %}
+                  <span class="badge badge-green">Low</span>
+                {% endif %}
+              </td>
+              <td class="text-sm text-muted">{{ r.model_used }}</td>
+              <td>
+                <div class="btn-row" style="gap:4px;">
+                  <a href="{{ url_for('patient.report', pred_id=r.id) }}"
+                     class="btn btn-sm btn-grey">Report</a>
+                  <form method="post"
+                        action="{{ url_for('admin.delete_prediction', pred_id=r.id) }}"
+                        class="inline-form"
+                        data-confirm="Delete prediction #{{ r.id }}? This cannot be undone.">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" style="border-color:#ef4444;">
+    <div class="panel-title" style="color:#b91c1c;">Danger Zone</div>
+    <p class="text-sm text-muted">
+      This removes <strong>every</strong> prediction record for every user. It cannot be undone.
+      Type <code>DELETE ALL</code> to confirm.
+    </p>
+    <form method="post" action="{{ url_for('admin.clear_predictions') }}"
+          class="btn-row"
+          data-confirm="This will erase EVERY prediction in the system. Continue?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="text" name="confirm" placeholder="Type DELETE ALL" style="max-width:220px;">
+      <button type="submit" class="btn btn-danger">Clear All Predictions</button>
+    </form>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9825;</div>
+    <div class="empty-title">
+      {% if total %}No records match those filters{% else %}No predictions recorded yet{% endif %}
+    </div>
+    <div class="empty-text">
+      {% if total %}Try widening the search or resetting the filters.
+      {% else %}Records appear here as soon as users run assessments.{% endif %}
+    </div>
+    {% if total %}
+      <div class="mt-2"><a href="{{ url_for('admin.predictions') }}" class="btn btn-grey">Reset Filters</a></div>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

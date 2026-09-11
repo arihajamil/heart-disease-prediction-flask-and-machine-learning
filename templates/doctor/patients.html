@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Patients &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">🧑 Patient Management</h1>
+<p class="page-subtitle">Every patient on the system, ordered by highest recorded risk.</p>
+<div class="doctor-hero">
+  <div class="hero-emoji">👩‍⚕️</div>
+  <div>
+    <div style="font-weight:700;">Welcome, {{ current_user.fullname or current_user.username }} 🩺</div>
+    <div class="text-sm text-muted">Patients showing the highest risk appear first.</div>
+  </div>
+</div>
+<hr class="divider">
+
+<div class="kpi-wrap">
+  <div class="kpi-card k-blue">
+    <div class="kpi-val">{{ total_patients }}</div>
+    <div class="kpi-lbl">Patients</div>
+  </div>
+  <div class="kpi-card k-violet">
+    <div class="kpi-val">{{ total_assessments }}</div>
+    <div class="kpi-lbl">Assessments Recorded</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">{{ at_risk }}</div>
+    <div class="kpi-lbl">Patients in the High Band</div>
+  </div>
+</div>
+
+{% if rows %}
+  <form method="get" class="filter-bar">
+    <div class="field">
+      <label for="q">Search patient</label>
+      <input type="text" id="q" name="q" value="{{ search }}" placeholder="Name or username">
+    </div>
+    <div class="field"><button type="submit" class="btn btn-sm">Search</button></div>
+    <div class="field"><a href="{{ url_for('doctor.patients') }}" class="btn btn-sm btn-grey">Reset</a></div>
+  </form>
+
+  <div class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th><th>Username</th><th>Role</th>
+            <th class="num">Assessments</th>
+            <th class="num">Highest Risk</th><th>Band</th>
+            <th>Last Seen</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td><strong>{{ r.fullname or '—' }}</strong>
+                {% if r.email %}<div class="text-sm text-muted">{{ r.email }}</div>{% endif %}
+              </td>
+              <td class="text-sm">&#64;{{ r.username }}</td>
+              <td><span class="badge badge-grey">{{ r.role }}</span></td>
+              <td class="num">{{ r.count }}</td>
+              <td class="num">
+                {% if r.count %}<strong>{{ '%.1f'|format(r.highest * 100) }}%</strong>
+                {% else %}<span class="text-muted">—</span>{% endif %}
+              </td>
+              <td>
+                {% if r.highest_risk %}
+                  {% if r.highest_risk.label == 'HIGH RISK' %}
+                    <span class="badge badge-red">High</span>
+                  {% elif r.highest_risk.label == 'MODERATE RISK' %}
+                    <span class="badge badge-amber">Moderate</span>
+                  {% else %}
+                    <span class="badge badge-green">Low</span>
+                  {% endif %}
+                {% else %}<span class="text-muted">—</span>{% endif %}
+              </td>
+              <td class="text-sm text-muted">{{ (r.last_seen or '—')[:16] }}</td>
+              <td>
+                {% if r.is_banned %}
+                  <span class="badge badge-red">Suspended</span>
+                {% else %}
+                  <span class="badge badge-green">Active</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('doctor.patient_detail', user_id=r.id) }}"
+                   class="btn btn-sm">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9825;</div>
+    <div class="empty-title">
+      {% if search %}No patients match that search{% else %}No patients registered yet{% endif %}
+    </div>
+    <div class="empty-text">
+      {% if search %}Try a different name or username.
+      {% else %}Patient accounts appear here once people register on the portal.{% endif %}
+    </div>
+    {% if search %}
+      <div class="mt-2"><a href="{{ url_for('doctor.patients') }}" class="btn btn-grey">Reset Search</a></div>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

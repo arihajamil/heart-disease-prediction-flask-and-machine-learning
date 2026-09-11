@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}404 &mdash; Page Not Found{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-code">404</div>
+  <div class="error-title">Page Not Found</div>
+  <p class="error-text">
+    {% if message %}{{ message }}{% else %}The page you asked for does not exist. It may have been moved or removed.{% endif %}
+  </p>
+  <div class="btn-row" style="justify-content:center;">
+    {% if current_user %}
+      <a href="{{ url_for('patient.dashboard') }}" class="btn">Back to Dashboard</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn">Go to Sign In</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

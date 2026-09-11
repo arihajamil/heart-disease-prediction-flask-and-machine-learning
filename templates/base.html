@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Heart Disease Prediction{% endblock %}</title>
+
+  {# Fonts and charts are served from this project, not a CDN, so the
+     application works with no internet connection at all. #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/heart_bg.png') }}">
+  {% block head_extra %}{% endblock %}
+</head>
+
+{#- ── Sidebar icons ──────────────────────────────────────────────
+    One small stroke icon per navigation item. Kept as a macro so the
+    navigation markup below stays readable.                        -#}
+{% macro icon(name) -%}
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {%- if name == 'dashboard' -%}
+    <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
+    <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+  {%- elif name == 'pulse' -%}
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+  {%- elif name == 'history' -%}
+    <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+  {%- elif name == 'patients' -%}
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  {%- elif name == 'report' -%}
+    <path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/>
+    <rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/>
+  {%- elif name == 'doctor' -%}
+    <path d="M8 3v5a4 4 0 0 0 8 0V3"/><path d="M12 12v3a5 5 0 0 0 5 5"/>
+    <circle cx="19" cy="18" r="2"/>
+  {%- elif name == 'list' -%}
+    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+  {%- elif name == 'database' -%}
+    <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/>
+    <path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/>
+  {%- elif name == 'analytics' -%}
+    <path d="M21.2 15.9A10 10 0 1 1 8.1 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>
+  {%- elif name == 'model' -%}
+    <path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>
+  {%- elif name == 'training' -%}
+    <rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/>
+    <path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>
+  {%- elif name == 'audit' -%}
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/>
+  {%- elif name == 'profile' -%}
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  {%- elif name == 'help' -%}
+    <circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
+    <path d="M12 17h.01"/>
+  {%- elif name == 'logout' -%}
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/>
+    <path d="M21 12H9"/>
+  {%- endif -%}
+</svg>
+{%- endmacro %}
+
+<body class="{% if current_user %}has-sidebar{% else %}no-sidebar{% endif %} {% block body_class %}{% endblock %}">
+
+{% if current_user %}
+  {# Initials for the avatar, e.g. "Dr. John Smith" -> "JS" #}
+  {%- set name_parts = (current_user.fullname or current_user.username).split() -%}
+  {%- set initials = (name_parts[0][:1] ~ (name_parts[-1][:1] if name_parts|length > 1 else ''))|upper -%}
+
+  <!-- ── Mobile menu button ─────────────────────────────────── -->
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- ── Sidebar ────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-brand">
+      <div class="brand-mark">&#9829;</div>
+      <div class="brand-text">
+        <div class="brand-name">Heart Disease Prediction</div>
+        <div class="brand-tag">AI Risk Portal</div>
+      </div>
+    </div>
+
+    <a href="{{ url_for('patient.profile') }}" class="user-card">
+      {# A role emoji reads faster than initials #}
+      <div class="user-avatar user-avatar-emoji">
+        {%- if current_user.role == ROLE_DOCTOR -%}👩‍⚕️
+        {%- elif is_admin -%}🛡️
+        {%- else -%}🧑
+        {%- endif -%}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ current_user.fullname or current_user.username }}</div>
+        <div class="user-role">{{ current_user.role }}</div>
+      </div>
+    </a>
+
+    <nav class="sidebar-nav">
+
+      <div class="nav-group">
+        <div class="nav-section">Overview</div>
+        <a href="{{ url_for('patient.dashboard') }}"
+           class="nav-link {% if request.endpoint == 'patient.dashboard' %}active{% endif %}">
+          {{ icon('dashboard') }}<span>Dashboard</span></a>
+
+        {% if current_user.role in [ROLE_PATIENT, ROLE_DOCTOR] or is_admin %}
+          <a href="{{ url_for('patient.diagnosis') }}"
+             class="nav-link {% if request.endpoint == 'patient.diagnosis' %}active{% endif %}">
+            {{ icon('pulse') }}<span>Risk Assessment</span></a>
+        {% endif %}
+
+        <a href="{{ url_for('patient.history') }}"
+           class="nav-link {% if request.endpoint == 'patient.history' %}active{% endif %}">
+          {{ icon('history') }}<span>My History</span></a>
+      </div>
+
+      {% if is_doctor or is_admin %}
+        <div class="nav-group">
+          <div class="nav-section">Clinical</div>
+          <a href="{{ url_for('doctor.patients') }}"
+             class="nav-link {% if 'doctor.patient' in (request.endpoint or '') %}active{% endif %}">
+            {{ icon('patients') }}<span>Patients</span></a>
+          <a href="{{ url_for('doctor.reports') }}"
+             class="nav-link {% if request.endpoint == 'doctor.reports' %}active{% endif %}">
+            {{ icon('report') }}<span>Clinical Reports</span></a>
+        </div>
+      {% endif %}
+
+      {% if is_admin %}
+        <div class="nav-group">
+          <div class="nav-section">Management</div>
+          <a href="{{ url_for('admin.users') }}"
+             class="nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}">
+            {{ icon('patients') }}<span>Users</span></a>
+          <a href="{{ url_for('admin.doctors') }}"
+             class="nav-link {% if request.endpoint == 'admin.doctors' %}active{% endif %}">
+            {{ icon('doctor') }}<span>Doctors</span></a>
+          <a href="{{ url_for('admin.predictions') }}"
+             class="nav-link {% if request.endpoint == 'admin.predictions' %}active{% endif %}">
+            {{ icon('list') }}<span>All Predictions</span></a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-section">System</div>
+          <a href="{{ url_for('admin.dataset') }}"
+             class="nav-link {% if request.endpoint == 'admin.dataset' %}active{% endif %}">
+            {{ icon('database') }}<span>Dataset</span></a>
+          <a href="{{ url_for('admin.analytics') }}"
+             class="nav-link {% if request.endpoint == 'admin.analytics' %}active{% endif %}">
+            {{ icon('analytics') }}<span>Analytics</span></a>
+          <a href="{{ url_for('admin.model_performance') }}"
+             class="nav-link {% if request.endpoint == 'admin.model_performance' %}active{% endif %}">
+            {{ icon('model') }}<span>Model Performance</span></a>
+          <a href="{{ url_for('admin.training') }}"
+             class="nav-link {% if request.endpoint == 'admin.training' %}active{% endif %}">
+            {{ icon('training') }}<span>Model Training</span></a>
+          <a href="{{ url_for('admin.audits') }}"
+             class="nav-link {% if request.endpoint == 'admin.audits' %}active{% endif %}">
+            {{ icon('audit') }}<span>Activity Log</span></a>
+        </div>
+      {% endif %}
+
+      <div class="nav-group">
+        <div class="nav-section">Account</div>
+        <a href="{{ url_for('patient.profile') }}"
+           class="nav-link {% if request.endpoint == 'patient.profile' %}active{% endif %}">
+          {{ icon('profile') }}<span>Profile</span></a>
+        <a href="{{ url_for('patient.help_page') }}"
+           class="nav-link {% if request.endpoint == 'patient.help_page' %}active{% endif %}">
+          {{ icon('help') }}<span>Help &amp; Guide</span></a>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <a href="{{ url_for('auth.logout') }}" class="signout-link">
+        {{ icon('logout') }}<span>Sign Out</span></a>
+      <div class="version">Heart Disease Prediction v3.0 &middot; FYP 2026</div>
+    </div>
+  </aside>
+{% endif %}
+
+<!-- ── Main content ─────────────────────────────────────────── -->
+<main class="main">
+  <div class="container">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack" id="flashStack">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">
+              <span>{{ message }}</span>
+              <button class="flash-close" aria-label="Dismiss">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="disclaimer">
+      <strong>Educational tool &mdash; not a medical diagnosis.</strong>
+      Heart Disease Prediction estimates cardiovascular risk from statistical patterns in
+      population data. It has not examined the patient and it can be wrong in
+      both directions. Always consult a qualified doctor before acting on any result.
+    </footer>
+  </div>
+</main>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Clinical Reports &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">📋 Clinical Reports</h1>
+<p class="page-subtitle">Aggregate risk statistics across every assessment in the system.</p>
+<hr class="divider">
+
+<form method="get" class="filter-bar">
+  <div class="field">
+    <label for="from">From date</label>
+    <input type="date" id="from" name="from" value="{{ date_from }}">
+  </div>
+  <div class="field">
+    <label for="to">To date</label>
+    <input type="date" id="to" name="to" value="{{ date_to }}">
+  </div>
+  <div class="field"><button type="submit" class="btn btn-sm">Apply</button></div>
+  <div class="field"><a href="{{ url_for('doctor.reports') }}" class="btn btn-sm btn-grey">Reset</a></div>
+</form>
+
+<div class="kpi-wrap">
+  <div class="kpi-card k-blue">
+    <div class="kpi-val">{{ total }}</div><div class="kpi-lbl">Assessments in Period</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">{{ high }}</div><div class="kpi-lbl">High Risk</div>
+  </div>
+  <div class="kpi-card k-green">
+    <div class="kpi-val">{{ low }}</div><div class="kpi-lbl">Low Risk</div>
+  </div>
+  <div class="kpi-card k-violet">
+    <div class="kpi-val">{{ '%.1f'|format(average * 100) }}%</div>
+    <div class="kpi-lbl">Average Risk Score</div>
+  </div>
+  <div class="kpi-card k-amber">
+    <div class="kpi-val">{{ '%.0f'|format((high / total * 100) if total else 0) }}%</div>
+    <div class="kpi-lbl">High-Risk Rate</div>
+  </div>
+</div>
+
+{% if has_data %}
+  <div class="grid grid-2">
+    <div class="panel">
+      <div class="panel-title">Risk Band Distribution</div>
+      <div class="chart-box"><canvas id="bandChart"></canvas></div>
+      <script type="application/json" id="bandData">{{ band_chart|tojson }}</script>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Model Usage</div>
+      <div class="chart-box"><canvas id="modelChart"></canvas></div>
+      <script type="application/json" id="modelData">{{ model_chart|tojson }}</script>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Assessments Over Time</div>
+    <div class="chart-box tall"><canvas id="timeChart"></canvas></div>
+    <script type="application/json" id="timeData">{{ timeline|tojson }}</script>
+    <div class="text-sm text-muted mt-1">
+      Showing the most recent 30 days that contain data.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Risk Band Summary</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Band</th><th>Range</th><th class="num">Count</th><th class="num">Share</th></tr></thead>
+        <tbody>
+          {% for band in band_chart %}
+            <tr>
+              <td>
+                <span class="badge {% if band.label == 'High' %}badge-red
+                  {%- elif band.label == 'Moderate' %}badge-amber{% else %}badge-green{% endif %}">
+                  {{ band.label }}</span>
+              </td>
+              <td class="text-sm text-muted">
+                {% if band.label == 'Low' %}below 40%
+                {% elif band.label == 'Moderate' %}40% to 70%
+                {% else %}above 70%{% endif %}
+              </td>
+              <td class="num">{{ band.value }}</td>
+              <td class="num">{{ '%.1f'|format((band.value / total * 100) if total else 0) }}%</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9776;</div>
+    <div class="empty-title">Nothing to report yet</div>
+    <div class="empty-text">
+      Reports summarise the risk assessments recorded in the system.<br>
+      {% if date_from or date_to %}
+        No assessments fall inside the selected dates &mdash; try widening the range.
+      {% else %}
+        Run at least one assessment and the summary will build itself.
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if has_data %}
+  <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  <script>
+    HDPCharts.barChart('bandChart', 'bandData', 'Assessments');
+    HDPCharts.barChart('modelChart', 'modelData', 'Times used', true);
+    HDPCharts.stackedOverTime('timeChart', 'timeData');
+  </script>
+{% endif %}
+{% endblock %}

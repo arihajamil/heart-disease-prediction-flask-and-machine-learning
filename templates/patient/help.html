@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Help &amp; Guide &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">❓ Help &amp; Clinical Reference</h1>
+<p class="page-subtitle">What each measurement means, how the models work, and how to read a result.</p>
+<hr class="divider">
+
+<div class="panel">
+  <div class="panel-title">Measurements Explained</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Field</th><th>What it means</th><th>Healthy range</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Age</strong></td>
+            <td>Age in whole years. Risk rises steadily with age.</td><td>&mdash;</td></tr>
+        <tr><td><strong>Systolic BP</strong></td>
+            <td>The higher blood pressure number &mdash; pressure while the heart beats.</td>
+            <td>under 120 mmHg</td></tr>
+        <tr><td><strong>Diastolic BP</strong></td>
+            <td>The lower number &mdash; pressure while the heart rests between beats.</td>
+            <td>under 80 mmHg</td></tr>
+        <tr><td><strong>Cholesterol</strong></td>
+            <td>Blood cholesterol, banded by a laboratory.</td>
+            <td>Normal / Above / Well Above</td></tr>
+        <tr><td><strong>Glucose</strong></td>
+            <td>Blood sugar, banded the same way.</td>
+            <td>Normal / Above / Well Above</td></tr>
+        <tr><td><strong>Smoking</strong></td>
+            <td>Whether the patient currently smokes.</td><td>&mdash;</td></tr>
+        <tr><td><strong>Alcohol</strong></td>
+            <td>Regular alcohol consumption.</td><td>&mdash;</td></tr>
+        <tr><td><strong>Physically Active</strong></td>
+            <td>Regular exercise, roughly 150 minutes a week or more.</td><td>&mdash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-title">Features the System Calculates for You</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>How it is worked out</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td><strong>BMI</strong></td>
+            <td>weight &divide; (height in metres)&sup2;</td>
+            <td>Weight alone means little without height.</td></tr>
+        <tr><td><strong>Pulse Pressure</strong></td>
+            <td>systolic &minus; diastolic</td>
+            <td>A widening gap suggests stiffening arteries.</td></tr>
+        <tr><td><strong>Age Group</strong></td>
+            <td>Five bands: 0&ndash;30, 31&ndash;45, 46&ndash;60, 61&ndash;75, 76+</td>
+            <td>Lets simpler models capture how risk accelerates with age.</td></tr>
+        <tr><td><strong>High Risk Flag</strong></td>
+            <td>raised cholesterol <em>and</em> systolic 140+</td>
+            <td>The combination is more dangerous than either alone.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-title">The Five Models</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Model</th><th>How it works</th><th>Strength</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Logistic Regression</strong></td>
+            <td>Weighs each measurement and adds them up.</td>
+            <td>Fast and easy to explain.</td></tr>
+        <tr><td><strong>Support Vector Machine</strong></td>
+            <td>Finds the boundary that best separates the two groups.</td>
+            <td>Handles subtle boundaries well.</td></tr>
+        <tr><td><strong>Decision Tree</strong></td>
+            <td>A flowchart of yes/no questions.</td>
+            <td>You can read the exact rules it follows.</td></tr>
+        <tr><td><strong>Random Forest</strong></td>
+            <td>200 trees vote together.</td>
+            <td>Resistant to overfitting.</td></tr>
+        <tr><td><strong>XGBoost</strong></td>
+            <td>Trees built one after another, each fixing the last one's mistakes.</td>
+            <td>Strongest overall on tabular data.</td></tr>
+        <tr><td><strong>Ensemble Voting</strong></td>
+            <td>Averages the probability from every enabled model.</td>
+            <td>The most stable single number.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-title">Reading Your Result</div>
+  <div class="kpi-wrap">
+    <div class="kpi-card k-green">
+      <div class="kpi-val">&lt;40%</div>
+      <div class="kpi-lbl">LOW &mdash; no significant risk pattern found</div>
+    </div>
+    <div class="kpi-card k-amber">
+      <div class="kpi-val">40&ndash;70%</div>
+      <div class="kpi-lbl">MODERATE &mdash; monitor, review lifestyle</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">&gt;70%</div>
+      <div class="kpi-lbl">HIGH &mdash; clinical review advised</div>
+    </div>
+  </div>
+  <p class="text-sm text-muted">
+    The <strong>model agreement</strong> line matters as much as the percentage.
+    When all five models agree, the result is more dependable. When they split
+    roughly down the middle, treat the number with caution and seek a professional opinion.
+  </p>
+</div>
+
+<div class="panel">
+  <div class="panel-title">Frequently Asked Questions</div>
+
+  <h4>Why does it ask for two blood pressure numbers?</h4>
+  <p class="text-sm text-muted">
+    A blood pressure reading always has two parts, written as 120/80. The first
+    is systolic and must always be the larger of the two. If you enter them the
+    wrong way round the form will stop you, because the models were never trained
+    on impossible readings and would return a meaningless answer.
+  </p>
+
+  <h4>How accurate is it?</h4>
+  <p class="text-sm text-muted">
+    The models score around 73% accuracy with a ROC AUC near 0.80 on 12,965
+    patients held back from training. That is useful for triage but is not a
+    diagnosis. The system only sees eight routine measurements &mdash; no ECG, no
+    family history, no blood test panel.
+  </p>
+
+  <h4>Who can see my results?</h4>
+  <p class="text-sm text-muted">
+    Patients see only their own assessments. Doctors and administrators can see
+    all records so they can provide clinical oversight. Every action taken by
+    staff is written to an audit log.
+  </p>
+
+  <h4>Can it replace a doctor?</h4>
+  <p class="text-sm text-muted">
+    No. It is a screening aid built as a student project. It cannot examine you,
+    does not know your history, and can be wrong in both directions. Always
+    confirm any result with a qualified doctor.
+  </p>
+</div>
+{% endblock %}

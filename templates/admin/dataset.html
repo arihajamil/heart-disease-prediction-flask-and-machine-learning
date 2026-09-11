@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Dataset &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">🗃 Dataset Overview</h1>
+<p class="page-subtitle">The data the models are trained on.</p>
+<hr class="divider">
+
+{% if not info.exists %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9888;</div>
+    <div class="empty-title">Dataset not found</div>
+    <div class="empty-text">
+      <code>{{ info.name }}</code> is missing from the project folder.<br>
+      Training cannot run until it is restored.
+    </div>
+  </div>
+{% elif not stats %}
+  <div class="alert alert-danger">
+    <code>{{ info.name }}</code> exists ({{ info.size_mb }} MB) but could not be read as a CSV.
+  </div>
+{% else %}
+
+  <div class="kpi-wrap">
+    <div class="kpi-card k-blue">
+      <div class="kpi-val">{{ '{:,}'.format(stats.rows) }}</div><div class="kpi-lbl">Rows</div>
+    </div>
+    <div class="kpi-card k-violet">
+      <div class="kpi-val">{{ stats.columns }}</div><div class="kpi-lbl">Columns</div>
+    </div>
+    <div class="kpi-card k-green">
+      <div class="kpi-val">{{ '{:,}'.format(stats.negative) }}</div><div class="kpi-lbl">No Disease</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">{{ '{:,}'.format(stats.positive) }}</div><div class="kpi-lbl">Disease</div>
+    </div>
+    <div class="kpi-card k-amber">
+      <div class="kpi-val">{{ stats.balance }}%</div><div class="kpi-lbl">Positive Rate</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="panel">
+      <div class="panel-title">File Details</div>
+      <div class="table-wrap">
+        <table>
+          <tbody>
+            <tr><td>File name</td><td class="num"><code>{{ info.name }}</code></td></tr>
+            <tr><td>Size on disk</td><td class="num">{{ info.size_mb }} MB</td></tr>
+            <tr><td>Target column</td><td class="num"><code>{{ stats.target or 'none found' }}</code></td></tr>
+            <tr><td>Missing values</td><td class="num">{{ '{:,}'.format(stats.missing) }}</td></tr>
+            <tr><td>Class balance</td>
+                <td class="num">
+                  {% if 40 <= stats.balance <= 60 %}
+                    <span class="badge badge-green">Well balanced</span>
+                  {% else %}
+                    <span class="badge badge-amber">Imbalanced</span>
+                  {% endif %}
+                </td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert alert-info text-sm mt-2">
+        Cholesterol and glucose are stored zero-indexed in this file. The training
+        pipeline shifts them to the clinical 1&ndash;3 scale before filtering, which
+        is what keeps 92.6% of the rows instead of 9.4%.
+      </div>
+    </div>
+
+    {% if balance_chart %}
+      <div class="panel">
+        <div class="panel-title">Class Balance</div>
+        <div class="chart-box"><canvas id="balanceChart"></canvas></div>
+        <script type="application/json" id="balanceData">{{ balance_chart|tojson }}</script>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Columns</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Column</th><th>Type</th><th class="num">Missing</th><th class="num">Unique Values</th></tr></thead>
+        <tbody>
+          {% for c in columns %}
+            <tr>
+              <td><code>{{ c.name }}</code>
+                {% if c.name == stats.target %}<span class="badge badge-violet">target</span>{% endif %}
+              </td>
+              <td class="text-sm text-muted">{{ c.dtype }}</td>
+              <td class="num">{{ c.nulls }}</td>
+              <td class="num">{{ '{:,}'.format(c.unique) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Preview &mdash; First 10 Rows</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>{% for col in preview_cols %}<th>{{ col }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+          {% for row in preview %}
+            <tr>{% for col in preview_cols %}<td class="num">{{ row[col] }}</td>{% endfor %}</tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if stats and balance_chart %}
+  <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  <script>HDPCharts.barChart('balanceChart', 'balanceData', 'Patients');</script>
+{% endif %}
+{% endblock %}

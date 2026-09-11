@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Activity Log &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">📜 Activity Log</h1>
+<p class="page-subtitle">A record of every action taken in the system.</p>
+<hr class="divider">
+
+<form method="get" class="filter-bar">
+  <div class="field">
+    <label for="q">Search</label>
+    <input type="text" id="q" name="q" value="{{ search }}" placeholder="User or details">
+  </div>
+  <div class="field">
+    <label for="action">Action</label>
+    <select id="action" name="action">
+      <option value="all" {% if action_filter == 'all' %}selected{% endif %}>All actions</option>
+      {% for a in actions %}
+        <option value="{{ a }}" {% if action_filter == a %}selected{% endif %}>{{ a }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field"><button type="submit" class="btn btn-sm">Apply</button></div>
+  <div class="field"><a href="{{ url_for('admin.audits') }}" class="btn btn-sm btn-grey">Reset</a></div>
+</form>
+
+{% if rows %}
+  <div class="panel">
+    <div class="panel-title">
+      {{ '{:,}'.format(total) }} entr{{ 'y' if total == 1 else 'ies' }}
+      &mdash; page {{ page }} of {{ total_pages }}
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+        <tbody>
+          {% for e in rows %}
+            <tr>
+              <td class="text-sm">{{ e.timestamp[:19] }}</td>
+              <td>{{ e.username or '—' }}</td>
+              <td>
+                <span class="badge
+                  {%- if 'Delete' in e.action or 'Ban' in e.action or 'Purge' in e.action or 'Clear' in e.action %} badge-red
+                  {%- elif 'Login' in e.action or 'Registration' in e.action %} badge-green
+                  {%- elif 'Training' in e.action %} badge-violet
+                  {%- else %} badge-grey{% endif %}">{{ e.action }}</span>
+              </td>
+              <td class="text-sm text-muted">{{ e.details }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if total_pages > 1 %}
+      {% set qs = 'action=' ~ action_filter ~ '&q=' ~ search %}
+      <div class="pagination">
+        {% if page > 1 %}
+          <a href="?{{ qs }}&page=1">&laquo; First</a>
+          <a href="?{{ qs }}&page={{ page - 1 }}">Previous</a>
+        {% else %}
+          <span class="disabled">&laquo; First</span>
+          <span class="disabled">Previous</span>
+        {% endif %}
+
+        {% for p in range([1, page - 2]|max, [total_pages, page + 2]|min + 1) %}
+          {% if p == page %}
+            <span class="current">{{ p }}</span>
+          {% else %}
+            <a href="?{{ qs }}&page={{ p }}">{{ p }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+          <a href="?{{ qs }}&page={{ page + 1 }}">Next</a>
+          <a href="?{{ qs }}&page={{ total_pages }}">Last &raquo;</a>
+        {% else %}
+          <span class="disabled">Next</span>
+          <span class="disabled">Last &raquo;</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if is_admin %}
+    <div class="panel" style="border-color:#ef4444;">
+      <div class="panel-title" style="color:#b91c1c;">Danger Zone</div>
+      <p class="text-sm text-muted">
+        Purging clears the audit history. The original database-initialisation entry
+        is always kept.
+      </p>
+      <form method="post" action="{{ url_for('admin.clear_audits') }}"
+            data-confirm="Purge the entire activity log? This cannot be undone.">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger">Purge Activity Log</button>
+      </form>
+    </div>
+  {% endif %}
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9776;</div>
+    <div class="empty-title">No log entries match those filters</div>
+    <div class="empty-text">Try a different action type or search term.</div>
+    <div class="mt-2"><a href="{{ url_for('admin.audits') }}" class="btn btn-grey">Reset Filters</a></div>
+  </div>
+{% endif %}
+{% endblock %}

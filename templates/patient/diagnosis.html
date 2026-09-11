@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Risk Assessment &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">🩺 Cardiovascular Risk Assessment</h1>
+<p class="page-subtitle">Enter the clinical indicators below to estimate cardiovascular risk.</p>
+<hr class="divider">
+
+<div class="alert alert-warning">
+  <strong>Educational tool &mdash; not a medical diagnosis.</strong>
+  This estimate comes from statistical patterns in population data. It cannot
+  examine a patient and it can be wrong. Always confirm with a qualified doctor.
+</div>
+
+{% if warnings %}
+  <div class="alert alert-warning">
+    <strong>Some models are unavailable:</strong>
+    <ul style="margin:6px 0 0 18px;">
+      {% for w in warnings %}<li>{{ w }}</li>{% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+{% if not engine_ready %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9888;</div>
+    <div class="empty-title">No trained models available</div>
+    <div class="empty-text">
+      An administrator needs to run the training pipeline before assessments can be made.
+    </div>
+  </div>
+{% else %}
+
+<form method="post" action="{{ url_for('patient.predict') }}" id="diagnosisForm" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="panel">
+    <div class="panel-title">Patient Details</div>
+    <div class="form-grid">
+      {% if patient_ref %}
+      {# Patient account: the ID is assigned by the app and the name is the
+         account name. Both are shown but cannot be edited here. #}
+      <div class="field">
+        <label for="patient_id">Patient ID</label>
+        <input type="text" id="patient_id" name="patient_id"
+               value="{{ patient_ref }}" readonly>
+        <div class="hint">Assigned automatically to your account.</div>
+      </div>
+      <div class="field">
+        <label for="patient_name">Patient Name</label>
+        <input type="text" id="patient_name" name="patient_name"
+               value="{{ current_user.fullname or '' }}" readonly>
+        <div class="hint">Taken from your account. Change it under Profile.</div>
+      </div>
+      {% else %}
+      {# Doctor or admin: assessing someone else, so the details are typed in. #}
+      <div class="field">
+        <label for="patient_id">Patient ID <span class="text-muted">(optional)</span></label>
+        <input type="text" id="patient_id" name="patient_id"
+               value="{{ form.patient_id or '' }}" placeholder="e.g. PT-1001"
+               maxlength="15" pattern="PT-[0-9]{3,12}"
+               style="text-transform:uppercase;">
+        <div class="field-error" data-error-for="patient_id"></div>
+        <div class="hint">Format: <code>PT-</code> followed by 3&ndash;12 digits.</div>
+      </div>
+      <div class="field">
+        <label for="patient_name">Patient Name</label>
+        <input type="text" id="patient_name" name="patient_name"
+               value="{{ form.patient_name or '' }}"
+               placeholder="e.g. Ahmed Khan" required maxlength="60"
+               pattern="[A-Za-z .'\-]+">
+        <div class="field-error" data-error-for="patient_name"></div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Clinical Indicators</div>
+    <div class="form-grid">
+
+      <div class="field">
+        <label for="age">Age (years)</label>
+        <input type="number" id="age" name="age" step="1" inputmode="numeric" min="18" max="120"
+               value="{{ form.age or 45 }}" required
+               data-min="18" data-max="120" data-label="Age">
+        <div class="field-error" data-error-for="age"></div>
+      </div>
+
+      <div class="field">
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender">
+          <option value="1" {% if form.gender == '0' %}{% else %}selected{% endif %}>Male</option>
+          <option value="0" {% if form.gender == '0' %}selected{% endif %}>Female</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="height">Height (cm)</label>
+        <input type="number" id="height" name="height" step="1" inputmode="numeric" min="100" max="250"
+               value="{{ form.height or 165 }}" required
+               data-min="100" data-max="250" data-label="Height">
+        <div class="field-error" data-error-for="height"></div>
+      </div>
+
+      <div class="field">
+        <label for="weight">Weight (kg)</label>
+        <input type="number" id="weight" name="weight" min="20" max="200" step="0.1" inputmode="decimal"
+               value="{{ form.weight or 70 }}" required
+               data-min="20" data-max="200" data-label="Weight">
+        <div class="field-error" data-error-for="weight"></div>
+      </div>
+
+      <div class="field">
+        <label for="ap_hi">Systolic BP (mmHg)</label>
+        <input type="number" id="ap_hi" name="ap_hi" step="1" inputmode="numeric" min="60" max="250"
+               value="{{ form.ap_hi or 120 }}" required
+               data-min="60" data-max="250" data-label="Systolic BP">
+        <div class="field-error" data-error-for="ap_hi"></div>
+      </div>
+
+      <div class="field">
+        <label for="ap_lo">Diastolic BP (mmHg)</label>
+        <input type="number" id="ap_lo" name="ap_lo" step="1" inputmode="numeric" min="40" max="200"
+               value="{{ form.ap_lo or 80 }}" required
+               data-min="40" data-max="200" data-label="Diastolic BP">
+        <div class="field-error" data-error-for="ap_lo"></div>
+      </div>
+
+      <div class="field">
+        <label for="cholesterol">Cholesterol Level</label>
+        <select id="cholesterol" name="cholesterol">
+          <option value="1" {% if form.cholesterol in (none,'','1') %}selected{% endif %}>Normal</option>
+          <option value="2" {% if form.cholesterol == '2' %}selected{% endif %}>Above Normal</option>
+          <option value="3" {% if form.cholesterol == '3' %}selected{% endif %}>Well Above Normal</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="gluc">Glucose Level</label>
+        <select id="gluc" name="gluc">
+          <option value="1" {% if form.gluc in (none,'','1') %}selected{% endif %}>Normal</option>
+          <option value="2" {% if form.gluc == '2' %}selected{% endif %}>Above Normal</option>
+          <option value="3" {% if form.gluc == '3' %}selected{% endif %}>Well Above Normal</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="smoke">Smoker?</label>
+        <select id="smoke" name="smoke">
+          <option value="0" {% if form.smoke != '1' %}selected{% endif %}>No</option>
+          <option value="1" {% if form.smoke == '1' %}selected{% endif %}>Yes</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="alco">Alcohol Use?</label>
+        <select id="alco" name="alco">
+          <option value="0" {% if form.alco != '1' %}selected{% endif %}>No</option>
+          <option value="1" {% if form.alco == '1' %}selected{% endif %}>Yes</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="active">Physically Active?</label>
+        <select id="active" name="active">
+          <option value="1" {% if form.active != '0' %}selected{% endif %}>Yes</option>
+          <option value="0" {% if form.active == '0' %}selected{% endif %}>No</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Live BMI readout, updated by diagnosis.js as height/weight change -->
+    <div class="bmi-readout" id="bmiReadout">
+      <div class="bmi-value" id="bmiValue">&mdash;</div>
+      <div>
+        <div class="bmi-caption">BODY MASS INDEX</div>
+        <div class="bmi-category" id="bmiCategory">enter height and weight</div>
+      </div>
+      <div class="bmi-scale">
+        WHO bands<br>
+        &lt;18.5 under &nbsp;|&nbsp; 18.5&ndash;25 normal<br>
+        25&ndash;30 over &nbsp;|&nbsp; 30+ obese
+      </div>
+    </div>
+
+    <!-- Live blood-pressure warning, shown by diagnosis.js -->
+    <div class="alert alert-warning" id="bpWarning" style="display:none;"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Assessment Options</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="model_choice">AI Model</label>
+        <select id="model_choice" name="model_choice">
+          <option value="Ensemble Voting (All Models)">Ensemble Voting (All Models)</option>
+          {% for m in models %}
+            <option value="{{ m }}">{{ m }}</option>
+          {% endfor %}
+        </select>
+        <div class="hint">Ensemble averages every enabled model &mdash; usually the most stable choice.</div>
+      </div>
+      <div class="field">
+        <label for="notes">Clinical Notes (optional)</label>
+        <textarea id="notes" name="notes" maxlength="500" placeholder="Any relevant observations">{{ form.notes or '' }}</textarea>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-block mt-2" id="submitBtn">
+      Generate Risk Assessment
+    </button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/diagnosis.js') }}"></script>
+{% endblock %}

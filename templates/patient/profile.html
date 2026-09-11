@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Profile &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">👤 Profile Settings</h1>
+<p class="page-subtitle">Manage your account details and password.</p>
+<hr class="divider">
+
+<div class="grid grid-2">
+
+  <div class="panel">
+    <div class="panel-title">Account Details</div>
+    <form method="post" action="{{ url_for('patient.profile') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="field">
+        <label for="username_display">Username</label>
+        <input type="text" id="username_display" value="{{ record.username }}" disabled>
+        <div class="hint">The username cannot be changed.</div>
+      </div>
+
+      <div class="field">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" name="fullname"
+               value="{{ record.fullname or '' }}" required>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="{{ record.email or '' }}" required>
+      </div>
+
+      <hr class="divider">
+      <div class="panel-title">Change Password</div>
+      <div class="alert alert-info text-sm">
+        Leave both boxes empty to keep your current password.
+      </div>
+
+      <div class="field">
+        <label for="new_password">New Password</label>
+        <input type="password" id="new_password" name="new_password"
+               placeholder="At least 8 characters" minlength="8" autocomplete="new-password">
+      </div>
+
+      <div class="field">
+        <label for="confirm_password">Confirm New Password</label>
+        <input type="password" id="confirm_password" name="confirm_password"
+               placeholder="Re-enter the new password" minlength="8" autocomplete="new-password">
+      </div>
+
+      <button type="submit" class="btn btn-block mt-1">Save Changes</button>
+    </form>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="panel-title">Account Summary</div>
+      <div class="table-wrap">
+        <table>
+          <tbody>
+            <tr><td>Username</td><td class="num">{{ record.username }}</td></tr>
+            <tr><td>Role</td>
+                <td class="num"><span class="badge badge-violet">{{ record.role }}</span></td></tr>
+            <tr><td>Status</td>
+                <td class="num">
+                  {% if record.is_banned %}
+                    <span class="badge badge-red">Suspended</span>
+                  {% else %}
+                    <span class="badge badge-green">Active</span>
+                  {% endif %}
+                </td></tr>
+            <tr><td>Member since</td>
+                <td class="num text-sm">{{ (record.created_at or '')[:10] }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Password Security</div>
+      <p class="text-sm text-muted">
+        Passwords are stored using PBKDF2-HMAC-SHA256 with a unique random salt
+        for every account and 260,000 hashing rounds. Your actual password is
+        never written to the database and cannot be recovered &mdash; only reset.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

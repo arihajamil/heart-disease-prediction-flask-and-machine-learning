@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ person.fullname or person.username }} &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">{{ person.fullname or person.username }}</h1>
+<p class="page-subtitle">
+  &#64;{{ person.username }}
+  {% if person.email %} &bull; {{ person.email }}{% endif %}
+  &bull; <span class="badge badge-grey">{{ person.role }}</span>
+</p>
+<hr class="divider">
+
+<div class="btn-row mb-2">
+  <a href="{{ url_for('doctor.patients') }}" class="btn btn-sm btn-grey">&larr; Back to Patients</a>
+</div>
+
+<div class="kpi-wrap">
+  <div class="kpi-card k-blue">
+    <div class="kpi-val">{{ total }}</div><div class="kpi-lbl">Assessments</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">{{ high }}</div><div class="kpi-lbl">High Risk</div>
+  </div>
+  <div class="kpi-card k-green">
+    <div class="kpi-val">{{ low }}</div><div class="kpi-lbl">Low Risk</div>
+  </div>
+  {% if total %}
+    <div class="kpi-card k-amber">
+      <div class="kpi-val">{{ '%.0f'|format(average * 100) }}%</div>
+      <div class="kpi-lbl">Average Risk &mdash; {{ average_risk.label }}</div>
+    </div>
+  {% endif %}
+</div>
+
+{% if rows %}
+  {% if chart|length > 1 %}
+    <div class="panel">
+      <div class="panel-title">Risk Over Time</div>
+      <div class="chart-box"><canvas id="patientChart"></canvas></div>
+      <script type="application/json" id="patientData">{{ chart|tojson }}</script>
+    </div>
+  {% endif %}
+
+  <div class="panel">
+    <div class="panel-title">Full Assessment History</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Recorded Name</th>
+            <th class="num">Age</th><th class="num">BP</th><th class="num">BMI</th>
+            <th class="num">Chol</th><th class="num">Risk</th><th>Band</th>
+            <th>Model</th><th>Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td class="text-sm">{{ r.timestamp[:16] }}</td>
+              <td>{{ r.patient_name or '—' }}</td>
+              <td class="num">{{ r.age|int }}</td>
+              <td class="num text-sm">{{ r.ap_hi|int }}/{{ r.ap_lo|int }}</td>
+              <td class="num">{{ '%.1f'|format(r.weight / ((r.height / 100) ** 2)) }}</td>
+              <td class="num">{{ r.cholesterol }}</td>
+              <td class="num"><strong>{{ '%.1f'|format(r.probability * 100) }}%</strong></td>
+              <td>
+                {% if r.risk.label == 'HIGH RISK' %}
+                  <span class="badge badge-red">High</span>
+                {% elif r.risk.label == 'MODERATE RISK' %}
+                  <span class="badge badge-amber">Moderate</span>
+                {% else %}
+                  <span class="badge badge-green">Low</span>
+                {% endif %}
+              </td>
+              <td class="text-sm text-muted">{{ r.model_used }}</td>
+              <td>
+                <a href="{{ url_for('patient.report', pred_id=r.id) }}"
+                   class="btn btn-sm btn-grey">Download</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% set with_notes = rows | selectattr('notes') | list %}
+  {% if with_notes %}
+    <div class="panel">
+      <div class="panel-title">Clinical Notes</div>
+      {% for r in with_notes %}
+        <div class="alert alert-info">
+          <strong>{{ r.timestamp[:16] }}</strong> &mdash; {{ r.notes }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9825;</div>
+    <div class="empty-title">No assessments recorded</div>
+    <div class="empty-text">This account has not run a risk assessment yet.</div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if chart and chart|length > 1 %}
+  <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  <script>HDPCharts.riskTrend('patientChart', 'patientData');</script>
+{% endif %}
+{% endblock %}

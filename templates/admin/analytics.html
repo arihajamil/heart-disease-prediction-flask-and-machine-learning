@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Analytics &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">📉 System Analytics</h1>
+<p class="page-subtitle">Platform-wide usage, risk distribution and user breakdown.</p>
+<hr class="divider">
+
+<div class="kpi-wrap">
+  <div class="kpi-card k-blue"><div class="kpi-val">{{ total }}</div><div class="kpi-lbl">Total Assessments</div></div>
+  <div class="kpi-card"><div class="kpi-val">{{ high }}</div><div class="kpi-lbl">High Risk</div></div>
+  <div class="kpi-card k-green"><div class="kpi-val">{{ low }}</div><div class="kpi-lbl">Low Risk</div></div>
+  <div class="kpi-card k-violet"><div class="kpi-val">{{ users }}</div><div class="kpi-lbl">Registered Users</div></div>
+  <div class="kpi-card k-amber"><div class="kpi-val">{{ doctors }}</div><div class="kpi-lbl">Doctors</div></div>
+</div>
+
+{% if has_data %}
+  <div class="panel">
+    <div class="panel-title">Assessments Per Day</div>
+    <div class="chart-box tall"><canvas id="timeChart"></canvas></div>
+    <script type="application/json" id="timeData">{{ timeline|tojson }}</script>
+    <div class="text-sm text-muted mt-1">Most recent 30 days containing data.</div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="panel">
+      <div class="panel-title">Risk Split</div>
+      <div class="chart-box"><canvas id="splitChart"></canvas></div>
+      <script type="application/json" id="splitData">{{ split|tojson }}</script>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Risk Bands</div>
+      <div class="chart-box"><canvas id="bandChart"></canvas></div>
+      <script type="application/json" id="bandData">{{ band_chart|tojson }}</script>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Users by Role</div>
+      <div class="chart-box"><canvas id="roleChart"></canvas></div>
+      <script type="application/json" id="roleData">{{ role_chart|tojson }}</script>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Model Usage</div>
+    <div class="chart-box"><canvas id="modelChart"></canvas></div>
+    <script type="application/json" id="modelData">{{ model_chart|tojson }}</script>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9776;</div>
+    <div class="empty-title">No analytics available yet</div>
+    <div class="empty-text">
+      Charts appear once assessments have been recorded.<br>
+      There are currently {{ users }} registered user{{ '' if users == 1 else 's' }}.
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if has_data %}
+  <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  <script>
+    HDPCharts.stackedOverTime('timeChart', 'timeData');
+    HDPCharts.riskSplit('splitChart', 'splitData');
+    HDPCharts.barChart('bandChart', 'bandData', 'Assessments');
+    HDPCharts.barChart('roleChart', 'roleData', 'Users');
+    HDPCharts.barChart('modelChart', 'modelData', 'Times used', true);
+  </script>
+{% endif %}
+{% endblock %}

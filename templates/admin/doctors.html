@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Doctor Management &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">🩺 Doctor Management</h1>
+<p class="page-subtitle">Create and review doctor accounts.</p>
+<hr class="divider">
+
+<div class="kpi-wrap">
+  <div class="kpi-card k-blue"><div class="kpi-val">{{ rows|length }}</div><div class="kpi-lbl">Doctors</div></div>
+  <div class="kpi-card k-green"><div class="kpi-val">{{ active }}</div><div class="kpi-lbl">Active</div></div>
+  <div class="kpi-card"><div class="kpi-val">{{ suspended }}</div><div class="kpi-lbl">Suspended</div></div>
+</div>
+
+<div class="grid grid-2">
+  <div class="panel">
+    <div class="doctor-hero">
+      <div class="hero-emoji">👩‍⚕️</div>
+      <div>
+        <div class="panel-title mb-0">Create a Doctor Account</div>
+        <div class="text-sm text-muted">Clinicians get full oversight of patient records.</div>
+      </div>
+    </div>
+    <div class="alert alert-info text-sm">
+      Doctors cannot self-register. Accounts created here are given the Doctor role
+      and full clinical oversight of patient records.
+    </div>
+
+    <form method="post" action="{{ url_for('admin.doctors') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required minlength="3"
+               placeholder="e.g. dr_khan">
+      </div>
+      <div class="field">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" name="fullname" required
+               placeholder="e.g. Dr. Ahmed Khan">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required
+               placeholder="doctor@hospital.example">
+      </div>
+      <div class="field">
+        <label for="password">Temporary Password</label>
+        <input type="password" id="password" name="password" required minlength="6"
+               placeholder="At least 6 characters">
+        <div class="hint">Ask the doctor to change this after their first sign-in.</div>
+      </div>
+
+      <button type="submit" class="btn btn-block mt-1">Create Doctor Account</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Registered Doctors</div>
+    {% if rows %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Doctor</th><th class="num">Assessments</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% for d in rows %}
+              <tr>
+                <td><strong>{{ d.fullname or d.username }}</strong>
+                  <div class="text-sm text-muted">&#64;{{ d.username }}</div>
+                  {% if d.email %}<div class="text-sm text-muted">{{ d.email }}</div>{% endif %}
+                </td>
+                <td class="num">{{ d.count }}</td>
+                <td>
+                  {% if d.is_banned %}
+                    <span class="badge badge-red">Suspended</span>
+                  {% else %}
+                    <span class="badge badge-green">Active</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="text-sm text-muted mt-2">
+        Use <a href="{{ url_for('admin.users') }}">User Management</a> to suspend,
+        promote or delete an account.
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding:30px 16px;">
+        <div class="empty-icon">&#9877;</div>
+        <div class="empty-title">No doctors yet</div>
+        <div class="empty-text">Create the first doctor account using the form.</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}400 &mdash; Bad Request{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-code">400</div>
+  <div class="error-title">Bad Request</div>
+  <p class="error-text">
+    {% if message %}{{ message }}{% else %}The form could not be processed. Your security token may have expired &mdash; please reload the page and try again.{% endif %}
+  </p>
+  <div class="btn-row" style="justify-content:center;">
+    {% if current_user %}
+      <a href="{{ url_for('patient.dashboard') }}" class="btn">Back to Dashboard</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn">Go to Sign In</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

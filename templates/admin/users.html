@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}User Management &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">👥 User Management</h1>
+<p class="page-subtitle">View, promote, suspend or remove accounts. Every action is logged.</p>
+<hr class="divider">
+
+<div class="kpi-wrap">
+  <div class="kpi-card k-blue"><div class="kpi-val">{{ total }}</div><div class="kpi-lbl">Total Users</div></div>
+  <div class="kpi-card k-green"><div class="kpi-val">{{ by_role.get('Patient', 0) }}</div><div class="kpi-lbl">Patients</div></div>
+  <div class="kpi-card k-violet"><div class="kpi-val">{{ by_role.get('Doctor', 0) }}</div><div class="kpi-lbl">Doctors</div></div>
+  <div class="kpi-card k-amber"><div class="kpi-val">{{ by_role.get('Admin', 0) }}</div><div class="kpi-lbl">Administrators</div></div>
+  <div class="kpi-card"><div class="kpi-val">{{ banned }}</div><div class="kpi-lbl">Suspended</div></div>
+</div>
+
+<form method="get" class="filter-bar">
+  <div class="field">
+    <label for="q">Search</label>
+    <input type="text" id="q" name="q" value="{{ search }}" placeholder="Name or username">
+  </div>
+  <div class="field">
+    <label for="role">Role</label>
+    <select id="role" name="role">
+      <option value="all" {% if role_filter == 'all' %}selected{% endif %}>All roles</option>
+      {% for r in all_roles %}
+        <option value="{{ r }}" {% if role_filter == r %}selected{% endif %}>{{ r }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field"><button type="submit" class="btn btn-sm">Apply</button></div>
+  <div class="field"><a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-grey">Reset</a></div>
+</form>
+
+{% if rows %}
+  <div class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num">ID</th><th>User</th><th>Username</th><th>Role</th>
+            <th class="num">Assessments</th><th>Status</th><th>Joined</th>
+            <th>Change Role</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in rows %}
+            <tr>
+              <td class="num">{{ u.id }}</td>
+              <td><strong>{{ u.fullname or '—' }}</strong>
+                {% if u.email %}<div class="text-sm text-muted">{{ u.email }}</div>{% endif %}
+              </td>
+              <td class="text-sm">&#64;{{ u.username }}</td>
+              <td>
+                <span class="badge {% if u.role == 'Admin' %}badge-violet
+                  {%- elif u.role == 'Doctor' %}badge-blue{% else %}badge-green{% endif %}">
+                  {{ u.role }}</span>
+              </td>
+              <td class="num">{{ u.count }}</td>
+              <td>
+                {% if u.is_banned %}
+                  <span class="badge badge-red">Suspended</span>
+                {% else %}
+                  <span class="badge badge-green">Active</span>
+                {% endif %}
+              </td>
+              <td class="text-sm text-muted">{{ (u.created_at or '')[:10] }}</td>
+
+              <td>
+                {% if u.id != current_user.id %}
+                  <form method="post" action="{{ url_for('admin.change_role', user_id=u.id) }}"
+                        class="btn-row" style="gap:4px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <select name="role" style="padding:5px 8px;font-size:.8em;">
+                      {% for r in all_roles %}
+                        <option value="{{ r }}" {% if u.role == r %}selected{% endif %}>{{ r }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-sm">Set</button>
+                  </form>
+                {% else %}
+                  <span class="text-sm text-muted">You</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if u.id != current_user.id %}
+                  <div class="btn-row" style="gap:4px;">
+                    <form method="post" action="{{ url_for('admin.ban', user_id=u.id) }}"
+                          class="inline-form">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-sm {% if u.is_banned %}btn-green{% else %}btn-grey{% endif %}">
+                        {{ 'Reinstate' if u.is_banned else 'Suspend' }}</button>
+                    </form>
+                    <form method="post" action="{{ url_for('admin.delete_user', user_id=u.id) }}"
+                          class="inline-form"
+                          data-confirm="Permanently delete '{{ u.username }}'? This cannot be undone.">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                  </div>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert alert-info text-sm">
+    <strong>Administrator is the highest role</strong> and carries every privilege:
+    user management, datasets, analytics, model training and the activity log.
+    An administrator can manage any account except their own, and the last
+    remaining administrator is protected from being suspended, demoted or
+    deleted so the system can never be locked out.
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9787;</div>
+    <div class="empty-title">No users match those filters</div>
+    <div class="empty-text">Try a different search term or role.</div>
+    <div class="mt-2"><a href="{{ url_for('admin.users') }}" class="btn btn-grey">Reset Filters</a></div>
+  </div>
+{% endif %}
+{% endblock %}

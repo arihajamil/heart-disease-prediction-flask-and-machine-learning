@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Model Training &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">⚙ Model Training</h1>
+<p class="page-subtitle">Rebuild all five classifiers from the current dataset.</p>
+<hr class="divider">
+
+<div class="kpi-wrap">
+  <div class="kpi-card k-violet">
+    <div class="kpi-val">{{ models_loaded }}</div><div class="kpi-lbl">Models Loaded</div>
+  </div>
+  <div class="kpi-card {% if dataset_ok %}k-green{% endif %}">
+    <div class="kpi-val">{{ 'OK' if dataset_ok else 'Missing' }}</div>
+    <div class="kpi-lbl">Dataset ({{ dataset_name }})</div>
+  </div>
+  <div class="kpi-card k-blue">
+    <div class="kpi-val">{{ runs|length }}</div><div class="kpi-lbl">Recorded Runs</div>
+  </div>
+</div>
+
+<!-- ── Live status ───────────────────────────────────────────── -->
+<div class="panel" id="statusPanel">
+  <div class="panel-title">Current Status</div>
+
+  <div id="statusBody">
+    {% if state.status == 'running' %}
+      <div class="alert alert-info">
+        <strong>Training is running…</strong> started at {{ state.started_at }}.
+        This page checks for updates every few seconds &mdash; you can safely leave it open.
+      </div>
+    {% elif state.status == 'success' %}
+      <div class="alert alert-success">
+        <strong>Last run succeeded.</strong> {{ state.message }}
+        {% if state.finished_at %}<br>Finished at {{ state.finished_at }}.{% endif %}
+      </div>
+    {% elif state.status == 'failed' %}
+      <div class="alert alert-danger">
+        <strong>Last run failed.</strong> {{ state.message }}
+        {% if state.finished_at %}<br>Stopped at {{ state.finished_at }}.{% endif %}
+      </div>
+    {% else %}
+      <div class="alert alert-info">
+        No training has been started in this session. The models currently loaded were
+        built by a previous run.
+      </div>
+    {% endif %}
+  </div>
+
+  {% if warnings %}
+    <div class="alert alert-warning">
+      <strong>Model loading warnings:</strong>
+      <ul style="margin:6px 0 0 18px;">
+        {% for w in warnings %}<li>{{ w }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+</div>
+
+<!-- ── Trigger ───────────────────────────────────────────────── -->
+<div class="panel">
+  <div class="panel-title">Run the Training Pipeline</div>
+
+  <p class="text-sm text-muted">
+    This runs the full twelve-step pipeline: load, clean, filter, engineer features,
+    split 80/20, scale, train five classifiers and cross-validate. On roughly 65,000
+    rows it takes about a minute. Training happens on a background thread, so the
+    interface stays usable.
+  </p>
+
+  <div class="alert alert-warning text-sm">
+    Every existing <code>.pkl</code> file in <code>models/</code> is overwritten,
+    along with <code>results.json</code> and <code>scaler.pkl</code>.
+    Predictions made before the run keep their stored values.
+  </div>
+
+  <form method="post" action="{{ url_for('admin.run_training') }}"
+        data-confirm="Retrain all five models? Existing model files will be replaced.">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn" id="trainBtn"
+            {% if state.status == 'running' or not dataset_ok %}disabled{% endif %}>
+      {% if state.status == 'running' %}Training in progress…
+      {% elif not dataset_ok %}Dataset missing
+      {% else %}Start Training{% endif %}
+    </button>
+  </form>
+</div>
+
+<!-- ── History ───────────────────────────────────────────────── -->
+<div class="panel">
+  <div class="panel-title">Training History</div>
+  {% if runs %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="num">ID</th><th>Started</th><th>Status</th>
+                   <th class="num">Duration</th></tr></thead>
+        <tbody>
+          {% for r in runs %}
+            <tr>
+              <td class="num">{{ r.id }}</td>
+              <td class="text-sm">{{ r.timestamp[:19] }}</td>
+              <td>
+                {% if r.status == 'success' %}
+                  <span class="badge badge-green">Success</span>
+                {% elif r.status == 'failed' %}
+                  <span class="badge badge-red">Failed</span>
+                {% elif r.status == 'timeout' %}
+                  <span class="badge badge-amber">Timed out</span>
+                {% else %}
+                  <span class="badge badge-grey">{{ r.status }}</span>
+                {% endif %}
+              </td>
+              <td class="num">
+                {% if r.duration_s %}{{ '%.1f'|format(r.duration_s) }}s{% else %}—{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state" style="padding:30px 16px;">
+      <div class="empty-text">No training runs have been recorded yet.</div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if state.status == 'running' %}
+<script>
+/* Poll the status endpoint while a run is in progress, then reload once
+   it finishes so the history table and loaded-model count refresh. */
+(function () {
+  var statusUrl = "{{ url_for('admin.training_status') }}";
+
+  function check() {
+    fetch(statusUrl, { credentials: 'same-origin' })
+      .then(function (response) { return response.json(); })
+      .then(function (state) {
+        if (!state.running) {
+          window.location.reload();
+        } else {
+          setTimeout(check, 4000);
+        }
+      })
+      .catch(function () {
+        // Network hiccup - try again shortly rather than giving up
+        setTimeout(check, 8000);
+      });
+  }
+
+  setTimeout(check, 4000);
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,1163 @@
+{
+  "decision_threshold": 0.4,
+  "feature_order": [
+    "age",
+    "gender",
+    "height",
+    "weight",
+    "ap_hi",
+    "ap_lo",
+    "cholesterol",
+    "gluc",
+    "smoke",
+    "alco",
+    "active",
+    "bmi",
+    "pulse_pressure",
+    "age_group",
+    "high_risk_flag"
+  ],
+  "models_available": [
+    "Logistic Regression",
+    "Support Vector Machine (SVM)",
+    "Decision Tree",
+    "Random Forest",
+    "XGBoost"
+  ],
+  "risk_thresholds": {
+    "low_max": 0.4,
+    "moderate_max": 0.7
+  },
+  "samples": [
+    {
+      "engineered": {
+        "age_group": 0,
+        "bmi": 20.7,
+        "high_risk_flag": 0,
+        "pulse_pressure": 38
+      },
+      "feature_vector": [
+        28,
+        0,
+        163,
+        55.0,
+        108,
+        70,
+        1,
+        1,
+        0,
+        0,
+        1,
+        20.7,
+        38,
+        0,
+        0
+      ],
+      "input": {
+        "active": 1,
+        "age": 28,
+        "alco": 0,
+        "ap_hi": 108,
+        "ap_lo": 70,
+        "cholesterol": 1,
+        "gender": 0,
+        "gluc": 1,
+        "height": 163,
+        "notes": "",
+        "patient_id": "PT-9001",
+        "patient_name": "Sample One",
+        "smoke": 0,
+        "weight": 55
+      },
+      "label": "S1 - healthy young woman",
+      "predictions": {
+        "Decision Tree": {
+          "model_used": "Decision Tree",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.0516826445,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.0516826445
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.0577142925
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.0560127186
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.0587078589
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.038296774
+            }
+          }
+        },
+        "Ensemble Voting (All Models)": {
+          "model_used": "Ensemble Voting",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.0524828577,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.0516826445
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.0577142925
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.0560127186
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.0587078589
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.038296774
+            }
+          }
+        },
+        "Logistic Regression": {
+          "model_used": "Logistic Regression",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.0577142925,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.0516826445
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.0577142925
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.0560127186
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.0587078589
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.038296774
+            }
+          }
+        },
+        "Random Forest": {
+          "model_used": "Random Forest",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.0560127186,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.0516826445
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.0577142925
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.0560127186
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.0587078589
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.038296774
+            }
+          }
+        },
+        "Support Vector Machine (SVM)": {
+          "model_used": "Support Vector Machine (SVM)",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.0587078589,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.0516826445
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.0577142925
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.0560127186
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.0587078589
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.038296774
+            }
+          }
+        },
+        "XGBoost": {
+          "model_used": "XGBoost",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.038296774,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.0516826445
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.0577142925
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.0560127186
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.0587078589
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.038296774
+            }
+          }
+        }
+      },
+      "valid": true,
+      "validation_errors": []
+    },
+    {
+      "engineered": {
+        "age_group": 1,
+        "bmi": 24.62,
+        "high_risk_flag": 0,
+        "pulse_pressure": 42
+      },
+      "feature_vector": [
+        41,
+        1,
+        178,
+        78.0,
+        122,
+        80,
+        1,
+        1,
+        0,
+        0,
+        1,
+        24.62,
+        42,
+        1,
+        0
+      ],
+      "input": {
+        "active": 1,
+        "age": 41,
+        "alco": 0,
+        "ap_hi": 122,
+        "ap_lo": 80,
+        "cholesterol": 1,
+        "gender": 1,
+        "gluc": 1,
+        "height": 178,
+        "notes": "",
+        "patient_id": "PT-9002",
+        "patient_name": "Sample Two",
+        "smoke": 0,
+        "weight": 78
+      },
+      "label": "S2 - healthy middle-aged man",
+      "predictions": {
+        "Decision Tree": {
+          "model_used": "Decision Tree",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.1457581955,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.1457581955
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.260043929
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.1580498474
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.2607206569
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.0974060595
+            }
+          }
+        },
+        "Ensemble Voting (All Models)": {
+          "model_used": "Ensemble Voting",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.1843957377,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.1457581955
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.260043929
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.1580498474
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.2607206569
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.0974060595
+            }
+          }
+        },
+        "Logistic Regression": {
+          "model_used": "Logistic Regression",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.260043929,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.1457581955
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.260043929
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.1580498474
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.2607206569
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.0974060595
+            }
+          }
+        },
+        "Random Forest": {
+          "model_used": "Random Forest",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.1580498474,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.1457581955
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.260043929
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.1580498474
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.2607206569
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.0974060595
+            }
+          }
+        },
+        "Support Vector Machine (SVM)": {
+          "model_used": "Support Vector Machine (SVM)",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.2607206569,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.1457581955
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.260043929
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.1580498474
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.2607206569
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.0974060595
+            }
+          }
+        },
+        "XGBoost": {
+          "model_used": "XGBoost",
+          "models_at_risk": 0,
+          "predicted_class": 0,
+          "probability": 0.0974060595,
+          "risk_label": "LOW RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 0,
+              "probability": 0.1457581955
+            },
+            "Logistic Regression": {
+              "predicted": 0,
+              "probability": 0.260043929
+            },
+            "Random Forest": {
+              "predicted": 0,
+              "probability": 0.1580498474
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 0,
+              "probability": 0.2607206569
+            },
+            "XGBoost": {
+              "predicted": 0,
+              "probability": 0.0974060595
+            }
+          }
+        }
+      },
+      "valid": true,
+      "validation_errors": []
+    },
+    {
+      "engineered": {
+        "age_group": 2,
+        "bmi": 29.69,
+        "high_risk_flag": 0,
+        "pulse_pressure": 48
+      },
+      "feature_vector": [
+        49,
+        0,
+        160,
+        76.0,
+        134,
+        86,
+        2,
+        1,
+        0,
+        0,
+        0,
+        29.69,
+        48,
+        2,
+        0
+      ],
+      "input": {
+        "active": 0,
+        "age": 49,
+        "alco": 0,
+        "ap_hi": 134,
+        "ap_lo": 86,
+        "cholesterol": 2,
+        "gender": 0,
+        "gluc": 1,
+        "height": 160,
+        "notes": "",
+        "patient_id": "PT-9003",
+        "patient_name": "Sample Three",
+        "smoke": 0,
+        "weight": 76
+      },
+      "label": "S3 - borderline, several mild factors",
+      "predictions": {
+        "Decision Tree": {
+          "model_used": "Decision Tree",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.4919518787,
+          "risk_label": "MODERATE RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.4919518787
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.7341288679
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.5643136222
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.7456513892
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.5830634832
+            }
+          }
+        },
+        "Ensemble Voting (All Models)": {
+          "model_used": "Ensemble Voting",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.6238218482,
+          "risk_label": "MODERATE RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.4919518787
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.7341288679
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.5643136222
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.7456513892
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.5830634832
+            }
+          }
+        },
+        "Logistic Regression": {
+          "model_used": "Logistic Regression",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.7341288679,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.4919518787
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.7341288679
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.5643136222
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.7456513892
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.5830634832
+            }
+          }
+        },
+        "Random Forest": {
+          "model_used": "Random Forest",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.5643136222,
+          "risk_label": "MODERATE RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.4919518787
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.7341288679
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.5643136222
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.7456513892
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.5830634832
+            }
+          }
+        },
+        "Support Vector Machine (SVM)": {
+          "model_used": "Support Vector Machine (SVM)",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.7456513892,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.4919518787
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.7341288679
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.5643136222
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.7456513892
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.5830634832
+            }
+          }
+        },
+        "XGBoost": {
+          "model_used": "XGBoost",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.5830634832,
+          "risk_label": "MODERATE RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.4919518787
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.7341288679
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.5643136222
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.7456513892
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.5830634832
+            }
+          }
+        }
+      },
+      "valid": true,
+      "validation_errors": []
+    },
+    {
+      "engineered": {
+        "age_group": 2,
+        "bmi": 31.77,
+        "high_risk_flag": 1,
+        "pulse_pressure": 58
+      },
+      "feature_vector": [
+        58,
+        1,
+        172,
+        94.0,
+        152,
+        94,
+        3,
+        2,
+        1,
+        1,
+        0,
+        31.77,
+        58,
+        2,
+        1
+      ],
+      "input": {
+        "active": 0,
+        "age": 58,
+        "alco": 1,
+        "ap_hi": 152,
+        "ap_lo": 94,
+        "cholesterol": 3,
+        "gender": 1,
+        "gluc": 2,
+        "height": 172,
+        "notes": "",
+        "patient_id": "PT-9004",
+        "patient_name": "Sample Four",
+        "smoke": 1,
+        "weight": 94
+      },
+      "label": "S4 - hypertensive older man",
+      "predictions": {
+        "Decision Tree": {
+          "model_used": "Decision Tree",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.8709256266,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.8709256266
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9064981779
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.8345474378
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9100681465
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7918710113
+            }
+          }
+        },
+        "Ensemble Voting (All Models)": {
+          "model_used": "Ensemble Voting",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.86278208,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.8709256266
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9064981779
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.8345474378
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9100681465
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7918710113
+            }
+          }
+        },
+        "Logistic Regression": {
+          "model_used": "Logistic Regression",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.9064981779,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.8709256266
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9064981779
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.8345474378
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9100681465
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7918710113
+            }
+          }
+        },
+        "Random Forest": {
+          "model_used": "Random Forest",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.8345474378,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.8709256266
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9064981779
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.8345474378
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9100681465
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7918710113
+            }
+          }
+        },
+        "Support Vector Machine (SVM)": {
+          "model_used": "Support Vector Machine (SVM)",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.9100681465,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.8709256266
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9064981779
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.8345474378
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9100681465
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7918710113
+            }
+          }
+        },
+        "XGBoost": {
+          "model_used": "XGBoost",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.7918710113,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.8709256266
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9064981779
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.8345474378
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9100681465
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7918710113
+            }
+          }
+        }
+      },
+      "valid": true,
+      "validation_errors": []
+    },
+    {
+      "engineered": {
+        "age_group": 3,
+        "bmi": 34.26,
+        "high_risk_flag": 1,
+        "pulse_pressure": 68
+      },
+      "feature_vector": [
+        66,
+        1,
+        170,
+        99.0,
+        168,
+        100,
+        3,
+        3,
+        1,
+        1,
+        0,
+        34.26,
+        68,
+        3,
+        1
+      ],
+      "input": {
+        "active": 0,
+        "age": 66,
+        "alco": 1,
+        "ap_hi": 168,
+        "ap_lo": 100,
+        "cholesterol": 3,
+        "gender": 1,
+        "gluc": 3,
+        "height": 170,
+        "notes": "",
+        "patient_id": "PT-9005",
+        "patient_name": "Sample Five",
+        "smoke": 1,
+        "weight": 99
+      },
+      "label": "S5 - high risk, every factor present",
+      "predictions": {
+        "Decision Tree": {
+          "model_used": "Decision Tree",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.7661184825,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.7661184825
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9748556775
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.7634224694
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9759144817
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7554751039
+            }
+          }
+        },
+        "Ensemble Voting (All Models)": {
+          "model_used": "Ensemble Voting",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.847157243,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.7661184825
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9748556775
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.7634224694
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9759144817
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7554751039
+            }
+          }
+        },
+        "Logistic Regression": {
+          "model_used": "Logistic Regression",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.9748556775,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.7661184825
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9748556775
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.7634224694
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9759144817
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7554751039
+            }
+          }
+        },
+        "Random Forest": {
+          "model_used": "Random Forest",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.7634224694,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.7661184825
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9748556775
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.7634224694
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9759144817
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7554751039
+            }
+          }
+        },
+        "Support Vector Machine (SVM)": {
+          "model_used": "Support Vector Machine (SVM)",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.9759144817,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.7661184825
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9748556775
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.7634224694
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9759144817
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7554751039
+            }
+          }
+        },
+        "XGBoost": {
+          "model_used": "XGBoost",
+          "models_at_risk": 5,
+          "predicted_class": 1,
+          "probability": 0.7554751039,
+          "risk_label": "HIGH RISK",
+          "total_models": 5,
+          "votes": {
+            "Decision Tree": {
+              "predicted": 1,
+              "probability": 0.7661184825
+            },
+            "Logistic Regression": {
+              "predicted": 1,
+              "probability": 0.9748556775
+            },
+            "Random Forest": {
+              "predicted": 1,
+              "probability": 0.7634224694
+            },
+            "Support Vector Machine (SVM)": {
+              "predicted": 1,
+              "probability": 0.9759144817
+            },
+            "XGBoost": {
+              "predicted": 1,
+              "probability": 0.7554751039
+            }
+          }
+        }
+      },
+      "valid": true,
+      "validation_errors": []
+    }
+  ]
+}

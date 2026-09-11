@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}History &mdash; Heart Disease Prediction{% endblock %}
+
+{% block content %}
+<h1 class="page-title">📈 {% if is_personal %}My Assessment History{% else %}Assessment History{% endif %}</h1>
+<p class="page-subtitle">
+  {% if is_personal %}
+    Every cardiovascular risk assessment recorded on your account.
+  {% else %}
+    All risk assessments recorded in the system.
+  {% endif %}
+</p>
+<hr class="divider">
+
+{% if rows %}
+  <!-- ── Filters ───────────────────────────────────────────── -->
+  <form method="get" class="filter-bar">
+    <div class="field">
+      <label for="q">Search</label>
+      <input type="text" id="q" name="q" value="{{ search }}" placeholder="Patient or model">
+    </div>
+    <div class="field">
+      <label for="verdict">Verdict</label>
+      <select id="verdict" name="verdict">
+        <option value="all"  {% if verdict == 'all'  %}selected{% endif %}>All</option>
+        <option value="high" {% if verdict == 'high' %}selected{% endif %}>High Risk</option>
+        <option value="low"  {% if verdict == 'low'  %}selected{% endif %}>Low Risk</option>
+      </select>
+    </div>
+    <div class="field">
+      <button type="submit" class="btn btn-sm">Apply</button>
+    </div>
+    <div class="field">
+      <a href="{{ url_for('patient.history') }}" class="btn btn-sm btn-grey">Reset</a>
+    </div>
+  </form>
+
+  <!-- ── Trend chart ───────────────────────────────────────── -->
+  {% if chart and chart|length > 1 %}
+    <div class="panel">
+      <div class="panel-title">Risk Over Time</div>
+      <div class="chart-box"><canvas id="historyChart"></canvas></div>
+      <script type="application/json" id="historyData">{{ chart|tojson }}</script>
+    </div>
+  {% endif %}
+
+  <!-- ── Table ─────────────────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-title">{{ rows|length }} record{{ '' if rows|length == 1 else 's' }}</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Patient</th>
+            {% if not is_personal %}<th>Recorded By</th>{% endif %}
+            <th class="num">Age</th>
+            <th class="num">BP</th>
+            <th class="num">Risk</th>
+            <th>Level</th>
+            <th>Model</th>
+            <th>Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td class="text-sm">{{ r.timestamp[:16] }}</td>
+              <td>{{ r.patient_name or '—' }}
+                {% if r.patient_id %}<div class="text-sm text-muted">{{ r.patient_id }}</div>{% endif %}
+              </td>
+              {% if not is_personal %}
+                <td class="text-sm">{{ r.doctor_name or r.doctor_username or '—' }}</td>
+              {% endif %}
+              <td class="num">{{ r.age|int }}</td>
+              <td class="num text-sm">{{ r.ap_hi|int }}/{{ r.ap_lo|int }}</td>
+              <td class="num"><strong>{{ '%.1f'|format(r.probability * 100) }}%</strong></td>
+              <td>
+                {% if r.risk.label == 'HIGH RISK' %}
+                  <span class="badge badge-red">High</span>
+                {% elif r.risk.label == 'MODERATE RISK' %}
+                  <span class="badge badge-amber">Moderate</span>
+                {% else %}
+                  <span class="badge badge-green">Low</span>
+                {% endif %}
+              </td>
+              <td class="text-sm text-muted">{{ r.model_used }}</td>
+              <td>
+                <a href="{{ url_for('patient.report', pred_id=r.id) }}"
+                   class="btn btn-sm btn-grey">Download</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">&#9825;</div>
+    <div class="empty-title">
+      {% if search or verdict != 'all' %}No records match those filters{% else %}No assessments yet{% endif %}
+    </div>
+    <div class="empty-text">
+      {% if search or verdict != 'all' %}
+        Try widening the search, or reset the filters.
+      {% else %}
+        Once you run your first risk assessment it will appear here.
+      {% endif %}
+    </div>
+    <div class="mt-2">
+      {% if search or verdict != 'all' %}
+        <a href="{{ url_for('patient.history') }}" class="btn btn-grey">Reset Filters</a>
+      {% else %}
+        <a href="{{ url_for('patient.diagnosis') }}" class="btn">Start an Assessment</a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if chart and chart|length > 1 %}
+  <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  <script>HDPCharts.riskTrend('historyChart', 'historyData');</script>
+{% endif %}
+{% endblock %}
